@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//usr/local/bin/**)",
+      "Read(//opt/homebrew/bin/**)",
+      "Bash(echo $PATH)",
+      "Read(//Users/laurenmarieclarkgrassano/.nvm/versions/**)",
+      "Read(//Users/laurenmarieclarkgrassano/.volta/**)",
+      "Read(//usr/local/lib/**)",
+      "Read(//Users/laurenmarieclarkgrassano/**)",
+      "Bash(mv ~/Documents/lapsapp/lapsapp/* ~/Documents/lapsapp/)",
+      "Bash(mv ~/Documents/lapsapp/lapsapp/.* ~/Documents/lapsapp/)",
+      "Bash(npx expo:*)",
+      "Bash(npm install:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(keytool -exportcert -alias androiddebugkey -keystore ~/.android/debug.keystore -storepass android -keypass android)",
+      "Bash(openssl sha1:*)",
+      "Bash(openssl base64:*)"
+    ]
+  }
+}
