@@ -6,12 +6,19 @@ import {
   SafeAreaView,
   TouchableOpacity,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 
 import { signOut } from '../auth/authHelpers';
 import { useAuthStore } from '../store/authStore';
 import { useDeviceStore } from '../store/deviceStore';
+import { SettingsStackParamList } from '../navigation/MainTabNavigator';
+
+type NavProp = NativeStackNavigationProp<SettingsStackParamList, 'SettingsList'>;
 
 export default function SettingsScreen() {
+  const navigation = useNavigation<NavProp>();
   const { username, clearAuth } = useAuthStore();
   const { clearDevice } = useDeviceStore();
 
@@ -45,6 +52,15 @@ export default function SettingsScreen() {
           <Text style={styles.sectionLabel}>Account</Text>
           <TouchableOpacity style={styles.signOutBtn} onPress={handleSignOut} activeOpacity={0.85}>
             <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Legal</Text>
+          <TouchableOpacity style={styles.legalRow} onPress={() => navigation.navigate('Terms')} activeOpacity={0.7}>
+            <Ionicons name="document-text-outline" size={18} color="#0078D4" style={styles.legalIcon} />
+            <Text style={styles.legalText}>Terms of Service</Text>
+            <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />
           </TouchableOpacity>
         </View>
       </View>
@@ -112,4 +128,16 @@ const styles = StyleSheet.create({
     borderColor: '#FECDD3',
   },
   signOutText: { color: '#B71C1C', fontSize: 16, fontWeight: '700' },
+  legalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: '#E8EDF2',
+  },
+  legalIcon: { marginRight: 12 },
+  legalText: { flex: 1, fontSize: 16, fontWeight: '600', color: '#111' },
 });

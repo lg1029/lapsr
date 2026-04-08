@@ -19,6 +19,7 @@ import { Device, LapsCredential } from '../types/device';
 import LapsPasswordCard from '../components/LapsPasswordCard';
 import BitLockerKeyCard from '../components/BitLockerKeyCard';
 import ErrorBanner from '../components/ErrorBanner';
+import logger from '../utils/logger';
 
 function trustTypeLabel(trustType?: string) {
   if (!trustType) return null;
@@ -50,7 +51,7 @@ function DetailRow({ label, value, iconName }: DetailRowProps) {
 
 export default function LapsScreen() {
   const navigation = useNavigation();
-  const { selectedDevice, setSelectedDevice } = useDeviceStore();
+  const { selectedDevice, setSelectedDevice, clearDevice } = useDeviceStore();
 
   const [device, setDevice] = useState<Device | null>(selectedDevice);
   const [lapsCredential, setLapsCredential] = useState<LapsCredential | null>(null);
@@ -75,21 +76,32 @@ export default function LapsScreen() {
       if (cred.status === 'fulfilled') {
         setLapsCredential(cred.value);
       } else {
-        setError(cred.reason?.message ?? 'Failed to retrieve LAPS password.');
+        logger.error('LAPS fetch error:', cred.reason);
+        setError(cred.reason?.message === 'No LAPS password configured for this device.'
+          ? 'No LAPS password configured for this device.'
+          : 'Failed to retrieve LAPS password. Please try again.');
       }
       if (blKeys.status === 'fulfilled') {
         setBitLockerKeys(blKeys.value);
       } else {
-        setBitLockerError(blKeys.reason?.response?.data?.error?.message ?? blKeys.reason?.message ?? 'Failed to retrieve BitLocker keys.');
+        logger.error('BitLocker fetch error:', blKeys.reason);
+        setBitLockerError('Failed to retrieve BitLocker keys. Please try again.');
       }
     } catch (e: any) {
-      setError(e?.message ?? 'Something went wrong.');
+      logger.error('LapsScreen fetchAll error:', e);
+      setError('Something went wrong. Please try again.');
     }
   }
 
   useEffect(() => {
     if (!selectedDevice) return;
     fetchAll(selectedDevice);
+    return () => {
+      // Clear credentials from memory when leaving the screen
+      setLapsCredential(null);
+      setBitLockerKeys(null);
+      clearDevice();
+    };
   }, []);
 
   const onRefresh = useCallback(async () => {

@@ -7,8 +7,14 @@ import HomeScreen from '../screens/HomeScreen';
 import DevicesScreen from '../screens/DevicesScreen';
 import LapsScreen from '../screens/LapsScreen';
 import SettingsScreen from '../screens/SettingsScreen';
+import TermsScreen from '../screens/TermsScreen';
 import UsersScreen from '../screens/UsersScreen';
 import UserDevicesScreen from '../screens/UserDevicesScreen';
+
+export type SettingsStackParamList = {
+  SettingsList: undefined;
+  Terms: undefined;
+};
 
 export type DevicesStackParamList = {
   DevicesList: undefined;
@@ -24,6 +30,7 @@ export type UsersStackParamList = {
 const Tab = createBottomTabNavigator();
 const DevicesStack = createNativeStackNavigator<DevicesStackParamList>();
 const UsersStack = createNativeStackNavigator<UsersStackParamList>();
+const SettingsStack = createNativeStackNavigator<SettingsStackParamList>();
 
 function DevicesNavigator() {
   return (
@@ -31,6 +38,15 @@ function DevicesNavigator() {
       <DevicesStack.Screen name="DevicesList" component={DevicesScreen} />
       <DevicesStack.Screen name="Laps" component={LapsScreen} />
     </DevicesStack.Navigator>
+  );
+}
+
+function SettingsNavigator() {
+  return (
+    <SettingsStack.Navigator screenOptions={{ headerShown: false }}>
+      <SettingsStack.Screen name="SettingsList" component={SettingsScreen} />
+      <SettingsStack.Screen name="Terms" component={TermsScreen} />
+    </SettingsStack.Navigator>
   );
 }
 
@@ -81,7 +97,7 @@ export default function MainTabNavigator() {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Devices" component={DevicesNavigator} />
       <Tab.Screen name="Users" component={UsersNavigator} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen name="Settings" component={SettingsNavigator} />
     </Tab.Navigator>
   );
 }

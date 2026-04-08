@@ -2,7 +2,6 @@ import Constants from 'expo-constants';
 
 const clientId: string = Constants.expoConfig?.extra?.msalClientId ?? '';
 const tenantId: string = Constants.expoConfig?.extra?.msalTenantId ?? '';
-console.log('MSAL clientId:', clientId, 'tenantId:', tenantId);
 
 export const MSAL_CONFIG = {
   auth: {

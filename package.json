@@ -18,6 +18,7 @@
     "expo-clipboard": "~55.0.9",
     "expo-constants": "~55.0.9",
     "expo-dev-client": "~55.0.18",
+    "expo-local-authentication": "^55.0.9",
     "expo-secure-store": "~55.0.9",
     "expo-status-bar": "~55.0.4",
     "nativewind": "^4.2.3",

@@ -20,6 +20,7 @@ import { Device } from '../types/device';
 import DeviceListItem from '../components/DeviceListItem';
 import ErrorBanner from '../components/ErrorBanner';
 import { DevicesStackParamList } from '../navigation/MainTabNavigator';
+import logger from '../utils/logger';
 
 type NavProp = NativeStackNavigationProp<DevicesStackParamList, 'DevicesList'>;
 
@@ -47,7 +48,7 @@ export default function DevicesScreen() {
     isRefresh ? setRefreshing(true) : setAllDevicesLoading(true);
     getAllDevices()
       .then(setAllDevices)
-      .catch(() => setError('Failed to load devices.'))
+      .catch((e) => { logger.error('getAllDevices error:', e); setError('Failed to load devices. Please try again.'); })
       .finally(() => isRefresh ? setRefreshing(false) : setAllDevicesLoading(false));
   }
 
@@ -83,8 +84,9 @@ export default function DevicesScreen() {
           ...userResults.filter((d) => !seen.has(d.id)),
         ];
         setSearchResults(merged);
-      } catch {
-        setError('Search failed. Check your connection and try again.');
+      } catch (e) {
+        logger.error('device search error:', e);
+        setError('Search failed. Please check your connection and try again.');
         setSearchResults([]);
       } finally {
         setLoading(false);

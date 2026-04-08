@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { getAllUsers, searchUsers, User } from '../api/users';
 import ErrorBanner from '../components/ErrorBanner';
 import { UsersStackParamList } from '../navigation/MainTabNavigator';
+import logger from '../utils/logger';
 
 type NavProp = NativeStackNavigationProp<UsersStackParamList, 'UsersList'>;
 
@@ -36,7 +37,10 @@ export default function UsersScreen() {
     setError(null);
     getAllUsers()
       .then(setAllUsers)
-      .catch((e) => setError(`Failed to load users: ${e?.response?.status ?? e?.message ?? 'unknown error'}`))
+      .catch((e) => {
+        logger.error('getAllUsers error:', e);
+        setError('Failed to load users. Please try again.');
+      })
       .finally(() => isRefresh ? setRefreshing(false) : setAllLoading(false));
   }
 
@@ -56,8 +60,9 @@ export default function UsersScreen() {
       try {
         const results = await searchUsers(query.trim());
         setSearchResults(results);
-      } catch {
-        setError('Search failed. Check your connection and try again.');
+      } catch (e) {
+        logger.error('searchUsers error:', e);
+        setError('Search failed. Please check your connection and try again.');
         setSearchResults([]);
       } finally {
         setSearchLoading(false);

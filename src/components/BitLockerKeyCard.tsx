@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { Ionicons } from '@expo/vector-icons';
 import { BitLockerKey } from '../api/bitlocker';
 
@@ -18,18 +18,26 @@ function volumeTypeLabel(type: string) {
 
 function KeyEntry({ bk }: { bk: BitLockerKey }) {
   const [revealed, setRevealed] = useState(false);
-  const [copied, setCopied] = useState(false);
 
-  const displayKey = revealed ? (bk.key ?? '—') : '••••••-••••••-••••••-••••••-••••••-••••••-••••••-••••••';
+  const displayKey = revealed
+    ? (bk.key ?? '—')
+    : '••••••-••••••-••••••-••••••-••••••-••••••-••••••-••••••';
   const createdDate = new Date(bk.createdDateTime).toLocaleDateString('en-US', {
     month: 'short', day: 'numeric', year: 'numeric',
   });
 
-  async function handleCopy() {
-    if (!bk.key) return;
-    await Clipboard.setStringAsync(bk.key);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  async function handleReveal() {
+    if (revealed) {
+      setRevealed(false);
+      return;
+    }
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: 'Authenticate to reveal BitLocker recovery key',
+      fallbackLabel: 'Use Passcode',
+    });
+    if (result.success) {
+      setRevealed(true);
+    }
   }
 
   return (
@@ -46,16 +54,10 @@ function KeyEntry({ bk }: { bk: BitLockerKey }) {
       <Text style={styles.keyId}>{bk.id}</Text>
 
       <Text style={styles.keyIdLabel}>Recovery Key</Text>
-      <TouchableOpacity onPress={() => setRevealed((r) => !r)} style={styles.keyRow} activeOpacity={0.7}>
+      <TouchableOpacity onPress={handleReveal} style={styles.keyRow} activeOpacity={0.7}>
         <Text style={styles.keyText} numberOfLines={revealed ? undefined : 1}>{displayKey}</Text>
         <Text style={styles.revealBtn}>{revealed ? 'Hide' : 'Reveal'}</Text>
       </TouchableOpacity>
-
-      {bk.key && (
-        <TouchableOpacity style={styles.copyBtn} onPress={handleCopy} activeOpacity={0.8}>
-          <Text style={styles.copyText}>{copied ? '✓ Copied!' : 'Copy Key'}</Text>
-        </TouchableOpacity>
-      )}
     </View>
   );
 }
@@ -132,7 +134,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
   },
   keyText: {
     flex: 1,
@@ -148,13 +149,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     marginLeft: 12,
   },
-  copyBtn: {
-    backgroundColor: '#0078D4',
-    borderRadius: 10,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  copyText: { color: '#fff', fontSize: 15, fontWeight: '700' },
   divider: {
     height: StyleSheet.hairlineWidth,
     backgroundColor: '#E8EDF2',

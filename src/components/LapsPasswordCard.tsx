@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { LapsCredential } from '../types/device';
 
 interface Props {
@@ -9,7 +9,6 @@ interface Props {
 
 export default function LapsPasswordCard({ credential }: Props) {
   const [revealed, setRevealed] = useState(false);
-  const [copied, setCopied] = useState(false);
 
   const password = atob(credential.passwordBase64);
   const displayPassword = revealed ? password : '••••••••••••';
@@ -18,26 +17,30 @@ export default function LapsPasswordCard({ credential }: Props) {
     hour: 'numeric', minute: '2-digit',
   });
 
-  async function handleCopy() {
-    await Clipboard.setStringAsync(password);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  async function handleReveal() {
+    if (revealed) {
+      setRevealed(false);
+      return;
+    }
+    const result = await LocalAuthentication.authenticateAsync({
+      promptMessage: 'Authenticate to reveal LAPS password',
+      fallbackLabel: 'Use Passcode',
+    });
+    if (result.success) {
+      setRevealed(true);
+    }
   }
 
   return (
     <View style={styles.card}>
       <Text style={styles.label}>LAPS Password</Text>
 
-      <TouchableOpacity onPress={() => setRevealed((r) => !r)} style={styles.passwordRow}>
+      <TouchableOpacity onPress={handleReveal} style={styles.passwordRow}>
         <Text style={styles.password}>{displayPassword}</Text>
         <Text style={styles.revealBtn}>{revealed ? 'Hide' : 'Reveal'}</Text>
       </TouchableOpacity>
 
       <Text style={styles.timestamp}>Backed up {backupDate}</Text>
-
-      <TouchableOpacity style={styles.copyBtn} onPress={handleCopy} activeOpacity={0.8}>
-        <Text style={styles.copyText}>{copied ? '✓ Copied!' : 'Copy Password'}</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -86,17 +89,5 @@ const styles = StyleSheet.create({
   timestamp: {
     fontSize: 12,
     color: '#999',
-    marginBottom: 20,
-  },
-  copyBtn: {
-    backgroundColor: '#0078D4',
-    borderRadius: 10,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  copyText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: '700',
   },
 });
