@@ -15,7 +15,17 @@
       "Bash(npx tailwindcss:*)",
       "Bash(keytool -exportcert -alias androiddebugkey -keystore ~/.android/debug.keystore -storepass android -keypass android)",
       "Bash(openssl sha1:*)",
-      "Bash(openssl base64:*)"
+      "Bash(openssl base64:*)",
+      "Bash(npm audit:*)",
+      "Bash(openssl s_client -connect graph.microsoft.com:443)",
+      "Bash(openssl x509:*)",
+      "Bash(openssl pkey:*)",
+      "Bash(openssl dgst:*)",
+      "Bash(openssl s_client -connect login.microsoftonline.com:443)",
+      "Bash(pod install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ]
   }
 }
