@@ -6,7 +6,7 @@ const tenantId: string = Constants.expoConfig?.extra?.msalTenantId ?? '';
 export const MSAL_CONFIG = {
   auth: {
     clientId,
-    authority: `https://login.microsoftonline.com/${tenantId}`,
+    authority: `https://login.microsoftonline.com/organizations`,
     redirectUri: 'msauth.com.laurengrassano.lapsr://auth',
   },
 };

@@ -18,6 +18,7 @@ import { useDeviceStore } from '../store/deviceStore';
 import { Device } from '../types/device';
 import DeviceListItem from '../components/DeviceListItem';
 import ErrorBanner from '../components/ErrorBanner';
+import BrandMark from '../components/BrandMark';
 import { UsersStackParamList } from '../navigation/MainTabNavigator';
 
 type Props = NativeStackScreenProps<UsersStackParamList, 'UserDevices'>;
@@ -61,6 +62,9 @@ export default function UserDevicesScreen() {
           <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
           <Text style={styles.backText}>Users</Text>
         </TouchableOpacity>
+        <View style={styles.headerBrand}>
+          <BrandMark />
+        </View>
       </View>
 
       <View style={styles.userInfo}>
@@ -116,6 +120,16 @@ const styles = StyleSheet.create({
   },
   backBtn: { flexDirection: 'row', alignItems: 'center' },
   backText: { fontSize: 17, color: '#FFFFFF', fontWeight: '600', marginLeft: 2 },
+  headerBrand: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    pointerEvents: 'none',
+  },
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',

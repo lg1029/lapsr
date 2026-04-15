@@ -16,13 +16,16 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { getAllUsers, searchUsers, User } from '../api/users';
 import ErrorBanner from '../components/ErrorBanner';
+import BrandMark from '../components/BrandMark';
 import { UsersStackParamList } from '../navigation/MainTabNavigator';
 import logger from '../utils/logger';
+import { useIsTablet, MAX_CONTENT_WIDTH } from '../utils/responsive';
 
 type NavProp = NativeStackNavigationProp<UsersStackParamList, 'UsersList'>;
 
 export default function UsersScreen() {
   const navigation = useNavigation<NavProp>();
+  const isTablet = useIsTablet();
   const [query, setQuery] = useState('');
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [searchResults, setSearchResults] = useState<User[]>([]);
@@ -85,71 +88,75 @@ export default function UsersScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Users</Text>
+        <BrandMark />
       </View>
 
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputRow}>
-          <Ionicons name="search" size={17} color="#9CA3AF" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search users..."
-            placeholderTextColor="#9CA3AF"
-            value={query}
-            onChangeText={setQuery}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          {query.length > 0 && (
-            <TouchableOpacity onPress={() => setQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name="close-circle" size={17} color="#9CA3AF" />
-            </TouchableOpacity>
+      <View style={styles.contentArea}>
+        <View style={[styles.inner, isTablet && styles.innerTablet]}>
+          <View style={styles.searchContainer}>
+            <View style={styles.searchInputRow}>
+              <Ionicons name="search" size={17} color="#9CA3AF" style={styles.searchIcon} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search users..."
+                placeholderTextColor="#9CA3AF"
+                value={query}
+                onChangeText={setQuery}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {query.length > 0 && (
+                <TouchableOpacity onPress={() => setQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Ionicons name="close-circle" size={17} color="#9CA3AF" />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+
+          {error && <ErrorBanner message={error} />}
+
+          {showLoading && (
+            <View style={styles.loadingRow}>
+              <ActivityIndicator size="small" color="#0078D4" />
+            </View>
           )}
+
+          <FlatList
+            data={listData}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <TouchableOpacity style={styles.row} onPress={() => handleSelectUser(item)} activeOpacity={0.7}>
+                <View style={styles.avatar}>
+                  <Ionicons name="person" size={18} color="#0078D4" />
+                </View>
+                <View style={styles.info}>
+                  <Text style={styles.name} numberOfLines={1}>{item.displayName}</Text>
+                  <Text style={styles.upn} numberOfLines={1}>{item.userPrincipalName}</Text>
+                  {item.jobTitle ? (
+                    <Text style={styles.sub} numberOfLines={1}>{item.jobTitle}{item.department ? ` · ${item.department}` : ''}</Text>
+                  ) : null}
+                </View>
+                <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />
+              </TouchableOpacity>
+            )}
+            refreshControl={
+              !isSearching ? (
+                <RefreshControl refreshing={refreshing} onRefresh={() => loadAllUsers(true)} tintColor="#0078D4" />
+              ) : undefined
+            }
+            ListEmptyComponent={
+              !showLoading ? (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyText}>
+                    {isSearching ? 'No users found.' : 'No users in this tenant.'}
+                  </Text>
+                </View>
+              ) : null
+            }
+            keyboardShouldPersistTaps="handled"
+          />
         </View>
       </View>
-
-      {error && <ErrorBanner message={error} />}
-
-      {showLoading && (
-        <View style={styles.loadingRow}>
-          <ActivityIndicator size="small" color="#0078D4" />
-        </View>
-      )}
-
-      <FlatList
-        data={listData}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.row} onPress={() => handleSelectUser(item)} activeOpacity={0.7}>
-            <View style={styles.avatar}>
-              <Ionicons name="person" size={18} color="#0078D4" />
-            </View>
-            <View style={styles.info}>
-              <Text style={styles.name} numberOfLines={1}>{item.displayName}</Text>
-              <Text style={styles.upn} numberOfLines={1}>{item.userPrincipalName}</Text>
-              {item.jobTitle ? (
-                <Text style={styles.sub} numberOfLines={1}>{item.jobTitle}{item.department ? ` · ${item.department}` : ''}</Text>
-              ) : null}
-            </View>
-            <Ionicons name="chevron-forward" size={16} color="#D1D5DB" />
-          </TouchableOpacity>
-        )}
-        refreshControl={
-          !isSearching ? (
-            <RefreshControl refreshing={refreshing} onRefresh={() => loadAllUsers(true)} tintColor="#0078D4" />
-          ) : undefined
-        }
-        ListEmptyComponent={
-          !showLoading ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>
-                {isSearching ? 'No users found.' : 'No users in this tenant.'}
-              </Text>
-            </View>
-          ) : null
-        }
-        keyboardShouldPersistTaps="handled"
-      />
     </SafeAreaView>
   );
 }
@@ -161,8 +168,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 16,
+    alignItems: 'center',
   },
-  title: { fontSize: 28, fontWeight: '800', color: '#FFFFFF' },
+  contentArea: { flex: 1, backgroundColor: '#F5F7FA' },
+  inner: { flex: 1 },
+  innerTablet: { maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center', width: '100%' },
   searchContainer: {
     paddingHorizontal: 16,
     paddingVertical: 12,

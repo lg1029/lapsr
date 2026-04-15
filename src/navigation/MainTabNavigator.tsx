@@ -95,8 +95,24 @@ export default function MainTabNavigator() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Devices" component={DevicesNavigator} />
-      <Tab.Screen name="Users" component={UsersNavigator} />
+      <Tab.Screen
+        name="Devices"
+        component={DevicesNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            navigation.navigate('Devices', { screen: 'DevicesList' });
+          },
+        })}
+      />
+      <Tab.Screen
+        name="Users"
+        component={UsersNavigator}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            navigation.navigate('Users', { screen: 'UsersList' });
+          },
+        })}
+      />
       <Tab.Screen name="Settings" component={SettingsNavigator} />
     </Tab.Navigator>
   );

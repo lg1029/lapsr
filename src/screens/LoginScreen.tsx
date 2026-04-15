@@ -16,8 +16,10 @@ import ErrorBanner from '../components/ErrorBanner';
 import LoadingOverlay from '../components/LoadingOverlay';
 import Logo from '../components/Logo';
 import logger from '../utils/logger';
+import { useIsTablet, MAX_CONTENT_WIDTH } from '../utils/responsive';
 
 export default function LoginScreen() {
+  const isTablet = useIsTablet();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [termsVisible, setTermsVisible] = useState(false);
@@ -52,7 +54,7 @@ export default function LoginScreen() {
         <Text style={styles.tagline}>LAPS passwords, right in your pocket.</Text>
       </View>
 
-      <View style={styles.card}>
+      <View style={[styles.card, isTablet && styles.cardTablet]}>
         {error && <ErrorBanner message={error} />}
 
         <TouchableOpacity style={styles.signInBtn} onPress={handleSignIn} activeOpacity={0.85}>
@@ -138,6 +140,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 32,
     paddingBottom: 40,
+  },
+  cardTablet: {
+    maxWidth: MAX_CONTENT_WIDTH,
+    alignSelf: 'center',
+    width: '100%',
+    borderRadius: 28,
+    marginHorizontal: 24,
+    marginBottom: 48,
   },
   signInBtn: {
     backgroundColor: '#0078D4',

@@ -13,6 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useDeviceStore } from '../store/deviceStore';
 import { useAuthStore } from '../store/authStore';
 import { Device } from '../types/device';
+import BrandMark from '../components/BrandMark';
 
 export default function HomeScreen() {
   const navigation = useNavigation<any>();
@@ -30,6 +31,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
+        <BrandMark />
         <Text style={styles.greeting}>Hello, {displayName}</Text>
         <Text style={styles.subtitle}>Look up a LAPS password</Text>
       </View>
@@ -83,8 +85,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 28,
+    alignItems: 'center',
   },
-  greeting: { fontSize: 26, fontWeight: '800', color: '#FFFFFF' },
+  greeting: { fontSize: 26, fontWeight: '800', color: '#FFFFFF', marginTop: 12 },
   subtitle: { fontSize: 14, color: 'rgba(255,255,255,0.75)', marginTop: 4 },
   body: {
     flex: 1,

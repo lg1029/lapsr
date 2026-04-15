@@ -19,13 +19,16 @@ import { useDeviceStore } from '../store/deviceStore';
 import { Device } from '../types/device';
 import DeviceListItem from '../components/DeviceListItem';
 import ErrorBanner from '../components/ErrorBanner';
+import BrandMark from '../components/BrandMark';
 import { DevicesStackParamList } from '../navigation/MainTabNavigator';
 import logger from '../utils/logger';
+import { useIsTablet, MAX_CONTENT_WIDTH } from '../utils/responsive';
 
 type NavProp = NativeStackNavigationProp<DevicesStackParamList, 'DevicesList'>;
 
 export default function DevicesScreen() {
   const navigation = useNavigation<NavProp>();
+  const isTablet = useIsTablet();
   const {
     searchQuery,
     searchResults,
@@ -111,59 +114,63 @@ export default function DevicesScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Devices</Text>
+        <BrandMark />
       </View>
 
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputRow}>
-          <Ionicons name="search" size={17} color="#9CA3AF" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search by device or user..."
-            placeholderTextColor="#9CA3AF"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Ionicons name="close-circle" size={17} color="#9CA3AF" />
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-
-      {error && <ErrorBanner message={error} />}
-
-      {showLoading && (
-        <View style={styles.loadingRow}>
-          <ActivityIndicator size="small" color="#0078D4" />
-        </View>
-      )}
-
-      <FlatList
-        data={listData}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <DeviceListItem device={item} onPress={handleSelectDevice} />
-        )}
-        refreshControl={
-          !isSearching ? (
-            <RefreshControl refreshing={refreshing} onRefresh={() => loadAllDevices(true)} tintColor="#0078D4" />
-          ) : undefined
-        }
-        ListEmptyComponent={
-          !showLoading ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>
-                {isSearching ? 'No devices found.' : 'No devices in this tenant.'}
-              </Text>
+      <View style={styles.contentArea}>
+        <View style={[styles.inner, isTablet && styles.innerTablet]}>
+          <View style={styles.searchContainer}>
+            <View style={styles.searchInputRow}>
+              <Ionicons name="search" size={17} color="#9CA3AF" style={styles.searchIcon} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Search by device or user..."
+                placeholderTextColor="#9CA3AF"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+              {searchQuery.length > 0 && (
+                <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                  <Ionicons name="close-circle" size={17} color="#9CA3AF" />
+                </TouchableOpacity>
+              )}
             </View>
-          ) : null
-        }
-        keyboardShouldPersistTaps="handled"
-      />
+          </View>
+
+          {error && <ErrorBanner message={error} />}
+
+          {showLoading && (
+            <View style={styles.loadingRow}>
+              <ActivityIndicator size="small" color="#0078D4" />
+            </View>
+          )}
+
+          <FlatList
+            data={listData}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <DeviceListItem device={item} onPress={handleSelectDevice} />
+            )}
+            refreshControl={
+              !isSearching ? (
+                <RefreshControl refreshing={refreshing} onRefresh={() => loadAllDevices(true)} tintColor="#0078D4" />
+              ) : undefined
+            }
+            ListEmptyComponent={
+              !showLoading ? (
+                <View style={styles.emptyState}>
+                  <Text style={styles.emptyText}>
+                    {isSearching ? 'No devices found.' : 'No devices in this tenant.'}
+                  </Text>
+                </View>
+              ) : null
+            }
+            keyboardShouldPersistTaps="handled"
+          />
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -175,8 +182,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 16,
+    alignItems: 'center',
   },
-  title: { fontSize: 28, fontWeight: '800', color: '#FFFFFF' },
+  contentArea: { flex: 1, backgroundColor: '#F5F7FA' },
+  inner: { flex: 1 },
+  innerTablet: { maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center', width: '100%' },
   searchContainer: {
     paddingHorizontal: 16,
     paddingVertical: 12,

@@ -8,7 +8,7 @@ import {
   ScrollView,
   RefreshControl,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, StackActions } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { getLapsPassword } from '../api/laps';
@@ -19,7 +19,9 @@ import { Device, LapsCredential } from '../types/device';
 import LapsPasswordCard from '../components/LapsPasswordCard';
 import BitLockerKeyCard from '../components/BitLockerKeyCard';
 import ErrorBanner from '../components/ErrorBanner';
+import BrandMark from '../components/BrandMark';
 import logger from '../utils/logger';
+import { useIsTablet, MAX_CONTENT_WIDTH } from '../utils/responsive';
 
 function trustTypeLabel(trustType?: string) {
   if (!trustType) return null;
@@ -51,6 +53,7 @@ function DetailRow({ label, value, iconName }: DetailRowProps) {
 
 export default function LapsScreen() {
   const navigation = useNavigation();
+  const isTablet = useIsTablet();
   const { selectedDevice, setSelectedDevice, clearDevice } = useDeviceStore();
 
   const [device, setDevice] = useState<Device | null>(selectedDevice);
@@ -125,14 +128,17 @@ export default function LapsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+        <TouchableOpacity onPress={() => navigation.dispatch(StackActions.pop())} style={styles.backBtn} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
           <Ionicons name="chevron-back" size={22} color="#FFFFFF" />
           <Text style={styles.backText}>Back</Text>
         </TouchableOpacity>
+        <View style={styles.headerBrand}>
+          <BrandMark />
+        </View>
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, isTablet && styles.contentTablet]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -243,7 +249,18 @@ const styles = StyleSheet.create({
   },
   backBtn: { flexDirection: 'row', alignItems: 'center' },
   backText: { fontSize: 17, color: '#FFFFFF', fontWeight: '600', marginLeft: 2 },
+  headerBrand: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    pointerEvents: 'none',
+  },
   content: { backgroundColor: '#F5F7FA', paddingBottom: 48 },
+  contentTablet: { maxWidth: MAX_CONTENT_WIDTH, alignSelf: 'center', width: '100%' },
   titleSection: {
     backgroundColor: '#F5F7FA',
     alignItems: 'center',

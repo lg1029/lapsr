@@ -13,12 +13,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { signOut } from '../auth/authHelpers';
 import { useAuthStore } from '../store/authStore';
 import { useDeviceStore } from '../store/deviceStore';
+import BrandMark from '../components/BrandMark';
 import { SettingsStackParamList } from '../navigation/MainTabNavigator';
+import { useIsTablet, MAX_CONTENT_WIDTH } from '../utils/responsive';
 
 type NavProp = NativeStackNavigationProp<SettingsStackParamList, 'SettingsList'>;
 
 export default function SettingsScreen() {
   const navigation = useNavigation<NavProp>();
+  const isTablet = useIsTablet();
   const { username, clearAuth } = useAuthStore();
   const { clearDevice } = useDeviceStore();
 
@@ -34,10 +37,10 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Settings</Text>
+        <BrandMark />
       </View>
 
-      <View style={styles.body}>
+      <View style={[styles.body, isTablet && styles.bodyTablet]}>
         <View style={styles.accountCard}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{initials}</Text>
@@ -75,12 +78,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 8,
     paddingBottom: 16,
+    alignItems: 'center',
   },
-  title: { fontSize: 28, fontWeight: '800', color: '#FFFFFF' },
   body: {
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 20,
+  },
+  bodyTablet: {
+    maxWidth: MAX_CONTENT_WIDTH,
+    alignSelf: 'center',
+    width: '100%',
   },
   accountCard: {
     flexDirection: 'row',
