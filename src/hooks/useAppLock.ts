@@ -3,10 +3,11 @@ import { AppState, AppStateStatus } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { useAuthStore } from '../store/authStore';
 import { useDeviceStore } from '../store/deviceStore';
+import { signOut } from '../auth/authHelpers';
 
-const BACKGROUND_LOCK_MS = 5 * 60 * 1000;     // Lock after 5 min in background
-const SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000; // Force re-auth after 8 hours
-const SESSION_KEY = 'lapsr_session_start';
+const BACKGROUND_LOCK_MS = 5 * 60 * 1000;          // Lock after 5 min in background
+export const SESSION_TIMEOUT_MS = 8 * 60 * 60 * 1000; // Force re-auth after 8 hours
+export const SESSION_KEY = 'lapsr_session_start';
 
 export function useAppLock() {
   const backgroundSince = useRef<number | null>(null);
@@ -43,6 +44,7 @@ export function useAppLock() {
             const val = await SecureStore.getItemAsync(SESSION_KEY);
             if (val && Date.now() - parseInt(val, 10) > SESSION_TIMEOUT_MS) {
               clearDevice();
+              await signOut().catch(() => {});
               clearAuth();
               return;
             }
@@ -52,6 +54,7 @@ export function useAppLock() {
           if (backgroundSince.current !== null) {
             if (Date.now() - backgroundSince.current >= BACKGROUND_LOCK_MS) {
               clearDevice();
+              await signOut().catch(() => {});
               clearAuth();
             }
             backgroundSince.current = null;

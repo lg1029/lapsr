@@ -3,7 +3,10 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { ActivityIndicator, View, Modal, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
+import * as SecureStore from 'expo-secure-store';
 import { getMsalInstance } from '../auth/msalInstance';
+import { signOut } from '../auth/authHelpers';
+import { SESSION_KEY, SESSION_TIMEOUT_MS } from '../hooks/useAppLock';
 import { useAuthStore } from '../store/authStore';
 import { isJailbroken } from '../utils/jailbreakDetection';
 
@@ -31,11 +34,19 @@ export default function RootNavigator() {
           setJailbreakWarning(true);
         }
 
-        // Restore existing MSAL session
+        // Restore existing MSAL session, but reject it if 8-hour timeout has elapsed
         const instance = await getMsalInstance();
         const accounts = await instance.getAccounts();
         if (accounts.length > 0) {
-          setAuthenticated(accounts[0].username ?? accounts[0].identifier);
+          const val = await SecureStore.getItemAsync(SESSION_KEY).catch(() => null);
+          const sessionValid = val !== null && Date.now() - parseInt(val, 10) <= SESSION_TIMEOUT_MS;
+          if (!sessionValid) {
+            // Missing or expired timestamp — fail closed: clear MSAL session and require fresh login
+            await signOut().catch(() => {});
+            await SecureStore.deleteItemAsync(SESSION_KEY).catch(() => {});
+          } else {
+            setAuthenticated(accounts[0].username ?? accounts[0].identifier);
+          }
         }
       } catch {
         // No existing session

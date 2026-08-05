@@ -10,6 +10,7 @@ export interface GraphDeviceResponse {
 
 export interface GraphDevice {
   id: string;
+  deviceId?: string;
   displayName: string;
   operatingSystem?: string;
   approximateLastSignInDateTime?: string;

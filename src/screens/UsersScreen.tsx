@@ -18,7 +18,7 @@ import { getAllUsers, searchUsers, User } from '../api/users';
 import ErrorBanner from '../components/ErrorBanner';
 import BrandMark from '../components/BrandMark';
 import { UsersStackParamList } from '../navigation/MainTabNavigator';
-import logger from '../utils/logger';
+import logger, { sanitizeError } from '../utils/logger';
 import { useIsTablet, MAX_CONTENT_WIDTH } from '../utils/responsive';
 
 type NavProp = NativeStackNavigationProp<UsersStackParamList, 'UsersList'>;
@@ -41,7 +41,7 @@ export default function UsersScreen() {
     getAllUsers()
       .then(setAllUsers)
       .catch((e) => {
-        logger.error('getAllUsers error:', e);
+        logger.error('getAllUsers error:', sanitizeError(e));
         setError('Failed to load users. Please try again.');
       })
       .finally(() => isRefresh ? setRefreshing(false) : setAllLoading(false));
@@ -64,7 +64,7 @@ export default function UsersScreen() {
         const results = await searchUsers(query.trim());
         setSearchResults(results);
       } catch (e) {
-        logger.error('searchUsers error:', e);
+        logger.error('searchUsers error:', sanitizeError(e));
         setError('Search failed. Please check your connection and try again.');
         setSearchResults([]);
       } finally {

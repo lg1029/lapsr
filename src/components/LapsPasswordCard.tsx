@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { AppState, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { LapsCredential } from '../types/device';
 
@@ -9,6 +9,15 @@ interface Props {
 
 export default function LapsPasswordCard({ credential }: Props) {
   const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'background' || state === 'inactive') {
+        setRevealed(false);
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   const password = atob(credential.passwordBase64);
   const displayPassword = revealed ? password : '••••••••••••';

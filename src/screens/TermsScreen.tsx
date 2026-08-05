@@ -19,7 +19,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Body({ children }: { children: string }) {
+function Body({ children }: { children: React.ReactNode }) {
   return <Text style={styles.body}>{children}</Text>;
 }
 

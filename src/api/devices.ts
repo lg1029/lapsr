@@ -5,18 +5,26 @@ import { GraphDeviceResponse, GraphUserResponse, GraphDeviceResponse as GraphReg
 const DEVICE_SELECT = 'id,deviceId,displayName,operatingSystem,approximateLastSignInDateTime';
 const DEVICE_EXPAND = 'registeredOwners($select=id,displayName,userPrincipalName)';
 
+function escapeOData(value: string): string {
+  return value.replace(/'/g, "''");
+}
+
+function hasDeviceId<T extends { deviceId?: string }>(d: T): d is T & { deviceId: string } {
+  return !!d.deviceId;
+}
+
 export async function searchDeviceByName(name: string): Promise<Device[]> {
   const response = await graphClient.get<GraphDeviceResponse>('/devices', {
     headers: { ConsistencyLevel: 'eventual' },
     params: {
-      $filter: `startswith(displayName,'${name}')`,
+      $filter: `startswith(displayName,'${escapeOData(name)}')`,
       $select: DEVICE_SELECT,
       $expand: DEVICE_EXPAND,
       $count: true,
       $top: 20,
     },
   });
-  return response.data.value;
+  return response.data.value.filter(hasDeviceId) as Device[];
 }
 
 export async function searchDevicesByUser(userName: string): Promise<Device[]> {
@@ -24,7 +32,7 @@ export async function searchDevicesByUser(userName: string): Promise<Device[]> {
   const usersResponse = await graphClient.get<GraphUserResponse>('/users', {
     headers: { ConsistencyLevel: 'eventual' },
     params: {
-      $filter: `startswith(displayName,'${userName}') or startswith(userPrincipalName,'${userName}')`,
+      $filter: `startswith(displayName,'${escapeOData(userName)}') or startswith(userPrincipalName,'${escapeOData(userName)}')`,
       $select: 'id,displayName,userPrincipalName',
       $count: true,
       $top: 10,
@@ -47,10 +55,12 @@ export async function searchDevicesByUser(userName: string): Promise<Device[]> {
           }
         );
         // Attach the owner so the list item can display it
-        return devResponse.data.value.map((d) => ({
-          ...d,
-          registeredOwners: [{ id: user.id, displayName: user.displayName, userPrincipalName: user.userPrincipalName }],
-        }));
+        return devResponse.data.value
+          .filter(hasDeviceId)
+          .map((d) => ({
+            ...d,
+            registeredOwners: [{ id: user.id, displayName: user.displayName, userPrincipalName: user.userPrincipalName }],
+          })) as Device[];
       } catch {
         return [];
       }
@@ -88,7 +98,7 @@ export async function getAllDevices(): Promise<Device[]> {
       $top: 100,
     },
   });
-  return response.data.value.sort((a, b) =>
-    (a.displayName ?? '').localeCompare(b.displayName ?? '')
-  );
+  return response.data.value
+    .filter(hasDeviceId)
+    .sort((a, b) => (a.displayName ?? '').localeCompare(b.displayName ?? '')) as Device[];
 }

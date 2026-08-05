@@ -12,6 +12,14 @@ export interface User {
 
 const DEVICE_SELECT = 'id,deviceId,displayName,operatingSystem,approximateLastSignInDateTime';
 
+function escapeOData(value: string): string {
+  return value.replace(/'/g, "''");
+}
+
+function hasDeviceId<T extends { deviceId?: string }>(d: T): d is T & { deviceId: string } {
+  return !!d.deviceId;
+}
+
 export async function getAllUsers(): Promise<User[]> {
   const response = await graphClient.get<GraphUserResponse>('/users', {
     params: {
@@ -28,7 +36,7 @@ export async function searchUsers(query: string): Promise<User[]> {
   const response = await graphClient.get<GraphUserResponse>('/users', {
     headers: { ConsistencyLevel: 'eventual' },
     params: {
-      $filter: `startswith(displayName,'${query}') or startswith(userPrincipalName,'${query}')`,
+      $filter: `startswith(displayName,'${escapeOData(query)}') or startswith(userPrincipalName,'${escapeOData(query)}')`,
       $select: 'id,displayName,userPrincipalName,jobTitle,department',
       $count: true,
       $top: 25,
@@ -42,5 +50,7 @@ export async function getUserDevices(userId: string, owner: DeviceOwner): Promis
     `/users/${userId}/registeredDevices`,
     { params: { $select: DEVICE_SELECT } }
   );
-  return response.data.value.map((d) => ({ ...d, registeredOwners: [owner] }));
+  return response.data.value
+    .filter(hasDeviceId)
+    .map((d) => ({ ...d, registeredOwners: [owner] })) as Device[];
 }

@@ -20,7 +20,7 @@ import LapsPasswordCard from '../components/LapsPasswordCard';
 import BitLockerKeyCard from '../components/BitLockerKeyCard';
 import ErrorBanner from '../components/ErrorBanner';
 import BrandMark from '../components/BrandMark';
-import logger from '../utils/logger';
+import logger, { sanitizeError } from '../utils/logger';
 import { useIsTablet, MAX_CONTENT_WIDTH } from '../utils/responsive';
 
 function trustTypeLabel(trustType?: string) {
@@ -79,7 +79,7 @@ export default function LapsScreen() {
       if (cred.status === 'fulfilled') {
         setLapsCredential(cred.value);
       } else {
-        logger.error('LAPS fetch error:', cred.reason);
+        logger.error('LAPS fetch error:', sanitizeError(cred.reason));
         setError(cred.reason?.message === 'No LAPS password configured for this device.'
           ? 'No LAPS password configured for this device.'
           : 'Failed to retrieve LAPS password. Please try again.');
@@ -87,11 +87,11 @@ export default function LapsScreen() {
       if (blKeys.status === 'fulfilled') {
         setBitLockerKeys(blKeys.value);
       } else {
-        logger.error('BitLocker fetch error:', blKeys.reason);
+        logger.error('BitLocker fetch error:', sanitizeError(blKeys.reason));
         setBitLockerError('Failed to retrieve BitLocker keys. Please try again.');
       }
     } catch (e: any) {
-      logger.error('LapsScreen fetchAll error:', e);
+      logger.error('LapsScreen fetchAll error:', sanitizeError(e));
       setError('Something went wrong. Please try again.');
     }
   }

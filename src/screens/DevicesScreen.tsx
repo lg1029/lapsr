@@ -21,7 +21,7 @@ import DeviceListItem from '../components/DeviceListItem';
 import ErrorBanner from '../components/ErrorBanner';
 import BrandMark from '../components/BrandMark';
 import { DevicesStackParamList } from '../navigation/MainTabNavigator';
-import logger from '../utils/logger';
+import logger, { sanitizeError } from '../utils/logger';
 import { useIsTablet, MAX_CONTENT_WIDTH } from '../utils/responsive';
 
 type NavProp = NativeStackNavigationProp<DevicesStackParamList, 'DevicesList'>;
@@ -51,7 +51,7 @@ export default function DevicesScreen() {
     isRefresh ? setRefreshing(true) : setAllDevicesLoading(true);
     getAllDevices()
       .then(setAllDevices)
-      .catch((e) => { logger.error('getAllDevices error:', e); setError('Failed to load devices. Please try again.'); })
+      .catch((e) => { logger.error('getAllDevices error:', sanitizeError(e)); setError('Failed to load devices. Please try again.'); })
       .finally(() => isRefresh ? setRefreshing(false) : setAllDevicesLoading(false));
   }
 
@@ -88,7 +88,7 @@ export default function DevicesScreen() {
         ];
         setSearchResults(merged);
       } catch (e) {
-        logger.error('device search error:', e);
+        logger.error('device search error:', sanitizeError(e));
         setError('Search failed. Please check your connection and try again.');
         setSearchResults([]);
       } finally {

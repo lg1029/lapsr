@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Text, TouchableOpacity, View, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { AppState, Text, TouchableOpacity, View, StyleSheet } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { Ionicons } from '@expo/vector-icons';
 import { BitLockerKey } from '../api/bitlocker';
@@ -18,6 +18,15 @@ function volumeTypeLabel(type: string) {
 
 function KeyEntry({ bk }: { bk: BitLockerKey }) {
   const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'background' || state === 'inactive') {
+        setRevealed(false);
+      }
+    });
+    return () => sub.remove();
+  }, []);
 
   const displayKey = revealed
     ? (bk.key ?? '—')

@@ -31,7 +31,9 @@ export default function LoginScreen() {
     try {
       const instance = await getMsalInstance();
       const result = await instance.acquireToken({ scopes: GRAPH_SCOPES });
-      setAuthenticated(result.account.username ?? result.account.identifier);
+      if (result) {
+        setAuthenticated(result.account.username ?? result.account.identifier);
+      }
     } catch (e: any) {
       logger.error('MSAL auth error:', e?.errorCode);
       if (e?.message?.includes('cancel') || e?.message?.includes('Cancel')) {

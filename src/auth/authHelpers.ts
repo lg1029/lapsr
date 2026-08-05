@@ -11,13 +11,14 @@ export async function getAccessToken(): Promise<string> {
         scopes: GRAPH_SCOPES,
         account: accounts[0],
       });
-      return result.accessToken;
+      if (result) return result.accessToken;
     } catch {
       // Silent failed — fall through to interactive
     }
   }
 
   const result = await instance.acquireToken({ scopes: GRAPH_SCOPES });
+  if (!result) throw new Error('Authentication cancelled or failed.');
   return result.accessToken;
 }
 
